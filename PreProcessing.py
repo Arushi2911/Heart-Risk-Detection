@@ -79,7 +79,7 @@ df['height'] = df['height'] / 100
 df['bmi'] = df['weight'] / ((df['height'] / 100) ** 2)
 df['pulse_pressure'] = df['ap_hi'] - df['ap_lo']
 df['health_index'] = (df['active'] * 1) - (df['smoke'] * 0.5) - (df['alco'] * 0.5)
-df['cholesterol_gluc_interaction'] = df['cholesterol'] * df['gluc']
+df['cholesterol_gluc_interaction'] = df['cholesterol'] + df['gluc']
 
 
 # Drop 'age' column (keep age_years)
