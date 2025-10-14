@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Heart Disease Prediction</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+ <div class="login">
+    <h1>Heart Disease Prediction</h1>
+    <form method="post">
+        <input type="number" name="age" placeholder="Enter Age" required />
+
+        <label>Gender:</label>
+        <input type="radio" name="gender" value="male" required /> Male
+        <input type="radio" name="gender" value="female" required /> Female
+
+        <input type="number" name="height" placeholder="Height (cm)" required />
+        <input type="number" name="weight" placeholder="Weight (kg)" required />
+        <input type="number" name="systolic_bp" placeholder="Systolic BP" required />
+        <input type="number" name="diastolic_bp" placeholder="Diastolic BP" required />
+
+        <label>Cholesterol Level:</label>
+        <select name="cholesterol" required>
+            <option value="">Select</option>
+            <option value="normal">Normal</option>
+            <option value="above_normal">Above Normal</option>
+            <option value="well_above_normal">Well Above Normal</option>
+        </select>
+
+        <label>Glucose Level:</label>
+        <select name="glucose" required>
+            <option value="">Select</option>
+            <option value="normal">Normal</option>
+            <option value="above_normal">Above Normal</option>
+            <option value="well_above_normal">Well Above Normal</option>
+        </select>
+
+        <label>Smoking:</label>
+        <input type="radio" name="smoke" value="yes" required /> Yes
+        <input type="radio" name="smoke" value="no" required /> No
+
+        <label>Alcohol Intake:</label>
+        <input type="radio" name="alcohol" value="yes" required /> Yes
+        <input type="radio" name="alcohol" value="no" required /> No
+
+        <label>Physical Activity:</label>
+        <input type="radio" name="active" value="yes" required /> Yes
+        <input type="radio" name="active" value="no" required /> No
+
+        <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
+    </form>
+
+    <br><br>
+    <h2 id="predi">{{ prediction_text }}</h2>
+ </div>
+</body>
+</html>

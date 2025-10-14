@@ -46,19 +46,46 @@ plt.tight_layout()
 plt.show()
 
 # Remove outliers
-df = df[(df['height'] >= 70) & (df['height'] <= 220)]
-df = df[df['weight'] >= 30]
-df = df[(df['ap_hi'] >= 70) & (df['ap_hi'] <= 250)]
-df = df[(df['ap_lo'] >= 40) & (df['ap_lo'] <= 180)]
+TARGET = 'cardio'
+INPUT_FEATURES = ['age_years','height','weight','ap_hi','ap_lo','cholesterol','gluc','smoke','alco','active']
+
+def IQR(series):
+    Q1 = series.quantile(0.25)
+    Q3 = series.quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    min_v = Q1 - 1.5 * IQR
+    max_v = Q3 + 1.5 * IQR
+
+    return series.clip(lower=min_v, upper=max_v)
+
+exclude = ['gluc','alco','smoke','colesterol','active']
+
+for num_feature in [f for f in INPUT_FEATURES if f not in exclude]:
+    for gender_category in df[TARGET].unique():
+        mask = df[TARGET] == gender_category
+        df.loc[mask, num_feature] = IQR(df.loc[mask, num_feature])
+
+
 
 print("\nAfter Dealing with Outliers\n")
 print("Dataset shape after cleaning:", df.shape)
 print(df[['height', 'weight', 'ap_hi', 'ap_lo']].describe())
 
+#Feature Engineering
+df['height'] = df['height'] / 100
+
+df['bmi'] = df['weight'] / ((df['height'] / 100) ** 2)
+df['pulse_pressure'] = df['ap_hi'] - df['ap_lo']
+df['health_index'] = (df['active'] * 1) - (df['smoke'] * 0.5) - (df['alco'] * 0.5)
+df['cholesterol_gluc_interaction'] = df['cholesterol'] * df['gluc']
+
+
 # Drop 'age' column (keep age_years)
 df = df.drop(columns=['age'])
 df = df[['age_years'] + [col for col in df.columns if col != 'age_years']]
-
+df = df.drop(columns=['height'])
 # Gender mapping
 df['gender'] = df['gender'].map({1: 0, 2: 1})
 
