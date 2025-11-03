@@ -1,59 +1,219 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Heart Disease Prediction</title>
-  <link rel="stylesheet" href="./style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heart Risk Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 </head>
-
 <body>
- <div class="login">
-    <h1>Heart Disease Prediction</h1>
-    <form method="post">
-        <input type="number" name="age" placeholder="Enter Age" required />
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-section">
+        <h1 class="logo-text">HealthTrack</h1>
+      </div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active">
+          <span class="material-symbols-outlined">dashboard</span> Dashboard
+        </a>
+        <a href="/history" class="nav-item">
+          <span class="material-symbols-outlined">history</span> History
+        </a>
+        <a href="/logout" class="nav-item">
+          <span class="material-symbols-outlined">logout</span> Logout
+        </a>
+      </nav>
+    </aside>
 
-        <label>Gender:</label>
-        <input type="radio" name="gender" value="male" required /> Male
-        <input type="radio" name="gender" value="female" required /> Female
+    <!-- Main Content -->
+    <main class="main-content">
 
-        <input type="number" name="height" placeholder="Height (cm)" required />
-        <input type="number" name="weight" placeholder="Weight (kg)" required />
-        <input type="number" name="systolic_bp" placeholder="Systolic BP" required />
-        <input type="number" name="diastolic_bp" placeholder="Diastolic BP" required />
+      <!-- Header -->
+      <header class="header">
+        <h1>Welcome, {{name}}</h1>
+      <form action="/generate_pdf" method="POST">
+        <button type="submit" class="download-btn">
+          <span class="material-symbols-outlined">download</span>
+          <span class="reportdownload">Download Report</span>
+        </button>
+      </form>
+      </header>
 
-        <label>Cholesterol Level:</label>
-        <select name="cholesterol" required>
-            <option value="">Select</option>
-            <option value="normal">Normal</option>
-            <option value="above_normal">Above Normal</option>
-            <option value="well_above_normal">Well Above Normal</option>
-        </select>
+      <!-- Alert Section  -->
+      <section class="alert-section hidden">
+        <span class="material-symbols-outlined heart-icon">favorite</span>
+        <div>
+          <h3 id="riskText"></h3>
+        </div>
+      </section>
+      
 
-        <label>Glucose Level:</label>
-        <select name="glucose" required>
-            <option value="">Select</option>
-            <option value="normal">Normal</option>
-            <option value="above_normal">Above Normal</option>
-            <option value="well_above_normal">Well Above Normal</option>
-        </select>
+      <div class="grid-container">
+      <div  class="left-section">
+        <div class="form-card">
+          <h3>Check Your Risk</h3>
+          <form id="predictionForm" method="POST" action="/prediction_model">
+            <div class="row">
+              <div class="col">
+                <label for="age"><img class="form-icons" src="{{ url_for('static', filename='images/age-group.webp') }}" alt="Age group">
+                  Age</label>
+                <input type="number" id="age" name="age" required>
+              </div>
+              <div class="col">
+                <label for="gender"><img class="form-icons" src="{{ url_for('static', filename='images/user (3).webp') }}" alt="Age group">Gender</label>
+                <select id="gender" name="gender" required>
+                  <option value="" disabled selected>Select...</option>
+                  <option value="1">Male</option>
+                  <option value="0">Female</option>
+                </select>
+              </div>
+            </div>
 
-        <label>Smoking:</label>
-        <input type="radio" name="smoke" value="yes" required /> Yes
-        <input type="radio" name="smoke" value="no" required /> No
+            <div class="row">
+              <div class="col">
+                <label for="weight"><img class="form-icons" src="{{ url_for('static', filename='images/scale.webp') }}" alt="Age group">Weight (kg)</label>
+                <input type="number" id="weight" name="weight" required>
+              </div>
+              <div class="col">
+                <label for="height"><img class="form-icons" src="{{ url_for('static', filename='images/height.webp') }}" alt="Age group">Height (cm)</label>
+                <input type="number" id="height" name="height" required>
+              </div>
+            </div>
 
-        <label>Alcohol Intake:</label>
-        <input type="radio" name="alcohol" value="yes" required /> Yes
-        <input type="radio" name="alcohol" value="no" required /> No
+            <div class="row">
+              <div class="col">
+                <label for="ap_hi"><img class="form-icons" src="{{ url_for('static', filename='images/hypertension.webp') }}" alt="Age group">Systolic BP</label>
+                <input type="number" id="ap_hi" name="ap_hi" required>
+              </div>
+              <div class="col">
+                <label for="ap_lo"><img class="form-icons" src="{{ url_for('static', filename='images/arm.webp') }}" alt="Age group">Diastolic BP</label>
+                <input type="number" id="ap_lo" name="ap_lo" required>
+              </div>
+            </div>
 
-        <label>Physical Activity:</label>
-        <input type="radio" name="active" value="yes" required /> Yes
-        <input type="radio" name="active" value="no" required /> No
+            <div class="row">
+              <div class="col">
+                <label for="cholesterol"><img class="form-icons" src="{{ url_for('static', filename='images/cholesterol.webp') }}" >Cholesterol</label>
+                <select id="cholesterol" name="cholesterol" required>
+                  <option value="" disabled selected>Select...</option>
+                  <option value="1">Normal</option>
+                  <option value="2">Above Normal</option>
+                  <option value="3">Well Above Normal</option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="glucose"><img class="form-icons" src="{{ url_for('static', filename='images/sugar.webp') }}" alt="Age group">Glucose</label>
+                <select id="glucose" name="glucose" required>
+                  <option value="" disabled selected>Select...</option>
+                  <option value="1">Normal</option>
+                  <option value="2">Above Normal</option>
+                  <option value="3">Well Above Normal</option>
+                </select>
+              </div>
+            </div>
 
-        <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-    </form>
+            <div class="radio-group">
+              <div>
+                <label><img class="form-icons" src="{{ url_for('static', filename='images/smoking.webp') }}" alt="Age group">Smoking</label>
+                <div class="radio-options">
+                  <input type="radio" name="smoke" value="1"> Yes
+                  <input type="radio" name="smoke" value="0"> No
+                </div>
+              </div>
+              <div>
+                <label><img class="form-icons" src="{{ url_for('static', filename='images/wine.webp') }}" alt="Age group">Alcohol</label>
+                <div class="radio-options">
+                  <input type="radio" name="alco" value="1"> Yes
+                  <input type="radio" name="alco" value="0"> No
+                </div>
+              </div>
+              <div>
+                <label><img class="form-icons" src="{{ url_for('static', filename='images/exercise.webp') }}" alt="Age group">Regular Exercise</label>
+                <div class="radio-options">
+                  <input type="radio" name="active" value="1"> Yes
+                  <input type="radio" name="active" value="0"> No
+                </div>
+              </div>
+            </div>
 
-    <br><br>
-    <h2 id="predi">{{ prediction_text }}</h2>
- </div>
+            <div class="hr-or"><span>OR</span></div>
+
+            <div class="upload-section">
+              <h3>Upload Health Report</h3>
+              <div class="upload-area" id="uploadArea">
+                <p>Drop your file here or click to upload</p>
+                <input type="file" id="pdfInput" hidden>
+              </div>
+              <p id="uploadStatus" class="upload-status"></p>
+            </div>
+
+            <button type="submit" class="btn">Predict</button>
+          </form>
+        </div>
+
+        <!-- <div class="tips-section form-card">
+          <h3>Personalized Tips</h3>
+          <ul>
+            <li>Maintain a balanced diet rich in fiber.</li>
+            <li>Exercise at least 30 minutes daily.</li>
+            <li>Regularly monitor your blood pressure.</li>
+          </ul>
+        </div> -->
+        </div>
+
+        <!-- Right Column: Visualization and Tips -->
+        <div class="graph-tips">
+          <div class="graph-section form-card">
+            <h3>Visualization</h3>
+          
+            <!-- Placeholder chart (shown before prediction) -->
+            <div id="placeholderChartContainer" class="chart-card large">
+              <canvas id="placeholderLineChart"></canvas>
+              <p class="chart-label">Health Metrics Over Time</p>
+            </div>
+          
+            <!-- Metrics and Charts (shown after prediction) -->
+            <div id="insightContainer" class="hidden-chart">
+              <div class="info-cards">
+                <div class="info-card" id="bmiCard">
+                  <h4>BMI</h4>
+                  <p><span>--</span></p>
+                </div>
+                <div class="info-card" id="pulseCard">
+                  <h4>Pulse Pressure</h4>
+                  <p><span>--</span></p>
+                </div>
+                <div class="info-card" id="mapCard">
+                  <h4>Mean Arterial Pressure (MAP)</h4>
+                  <p><span>--</span></p>
+                </div>
+              </div>
+              
+              <div class="charts-grid">
+                <div class="chart-card">
+                  <canvas id="riskOverTimeChart"></canvas>
+                  <p class="chart-label">Risk Factor Over the Years</p>
+                </div>
+                <div class="chart-card">
+                  <canvas id="riskFactorChart"></canvas>
+                  <p class="chart-label">Risk Contribution by Factor</p>
+                </div>
+                <div class="chart-card">
+                  <canvas id="healthRadarChart"></canvas>
+                  <p class="chart-label">Health Radar Overview</p>
+                </div>
+              </div>              
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </main>
+  </div>  
 </body>
 </html>

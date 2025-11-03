@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+import pickle
 
 X_train = pd.read_csv("X_train.csv")
 X_val = pd.read_csv("X_val.csv")
@@ -17,3 +18,5 @@ X_train.to_csv("X_train_scaled.csv", index=False)
 X_val.to_csv("X_val_scaled.csv", index=False)
 X_test.to_csv("X_test_scaled.csv", index=False)
 
+with open('scaler.pkl', 'wb') as f:
+    pickle.dump(scaler, f)

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-register">
+  <div class="form-container">
+    <div class="form">
+      <div class="form-header">
+        <img src="{{ url_for('static', filename='images/heart-icon.png') }}" alt="Logo" class="logo">
+        <h2>Welcome Back </h2>
+        <p class="subtitle">Login to continue your heart health journey</p>
+      </div>
+
+      <form class="login-form" action="/login" method="POST">
+        <div class="input-group">
+          <label for="email">Email</label>
+            <input id="email" type="email" name="email" placeholder="Enter your email" required />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+            <input id="password" type="password" name="password" placeholder="Enter your password" required />
+        </div>
+
+        <button class="button-reg" type="submit">Login</button>
+        <p class="switch-text">
+          Don’t have an account? <a href="{{ url_for('register') }}">Register</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

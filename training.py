@@ -14,14 +14,14 @@ y_test = pd.read_csv("y_test.csv").squeeze()
 weight = len(y_train[y_train == 0]) / len(y_train[y_train == 1])
 
 # XGBClassifier
-xgb = XGBClassifier(
-    random_state=42,
-    eval_metric='logloss',
-    n_jobs=-1,
-    reg_lambda=1,
-    reg_alpha=0.1,
-    scale_pos_weight=weight
-)
+xgb = XGBClassifier(random_state=42,
+                    learning_rate=0.05,
+                    eval_metric='logloss',
+                    use_label_encoder=False,
+                    n_jobs=-1,
+                    reg_lambda=2,
+                    reg_alpha=1,
+                    scale_pos_weight=weight)
 
 # Hyperparameter
 para = {
