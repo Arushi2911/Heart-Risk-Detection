@@ -290,6 +290,21 @@ input {
 .alert-section.low-risk .heart-icon {
   color: #1c8c4b;
 }
+/* moderate risk */
+/* moderate risk alert */
+.alert-section.moderate-risk {
+  background: rgba(255, 193, 7, 0.12); 
+  border-left: 4px solid #ffb300;    
+}
+
+.alert-section.moderate-risk h3 {
+  color: #ffb300; 
+}
+
+.alert-section.moderate-risk .heart-icon {
+  color: #ffc107;
+}
+
 
 #result {
   font-size: 1.2rem;
@@ -304,6 +319,10 @@ input {
 
 .high-risk {
   color: red;
+}
+
+.moderate-risk {
+  color: rgb(255, 247, 0);
 }
 
 
@@ -471,6 +490,11 @@ label {
   width: 100%;
   font-size: 1rem;
   transition: all 0.3s ease;
+}
+
+.invalid {
+  border: 2px solid red;
+  background-color: #ffe6e6;
 }
 
 .btn:hover {

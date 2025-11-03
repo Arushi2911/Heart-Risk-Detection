@@ -6,7 +6,9 @@ from PIL import Image
 from reportlab.pdfgen import canvas
 from flask_wtf import FlaskForm
 import pandas as pd
+from urllib.parse import unquote
 import pickle
+from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -492,44 +494,75 @@ def index():
 
     return render_template('index.html', name=name)
 
-from datetime import datetime
+@app.route('/risk_history')
+def risk_history():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
 
-@app.route('/delete_entry/<date>', methods=['POST'])
-def delete_entry(date):
+    user_id = session['user_id']
+    cursor = mysql.connection.cursor()
+
+    # Fetch last 6 records for this user
+    cursor.execute("""
+        SELECT created_at, risk_percentage 
+        FROM user_record 
+        WHERE user_id = %s 
+        ORDER BY created_at DESC 
+        LIMIT 6
+    """, (user_id,))
+    records = cursor.fetchall()
+    cursor.close()
+
+    # Reverse to show oldest → newest
+    records = records[::-1]
+
+    labels = [r[0].strftime("%d %b") for r in records]
+    data = [float(r[1]) for r in records]
+
+    return jsonify({'labels': labels, 'data': data})
+
+
+@app.route('/delete_entry/<timestamp>', methods=['POST'])
+def delete_entry(timestamp):
     if 'user_id' not in session:
         return "Unauthorized", 403
 
-    # Convert '03 Nov 2025, 04:57 PM' to '2025-11-03'
     try:
-        parsed_date = datetime.strptime(date, "%d %b %Y, %I:%M %p").date()
+        parsed_datetime = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
     except ValueError:
-        return "Invalid date format", 400
+        return "Invalid timestamp format", 400
 
     cursor = mysql.connection.cursor()
     cursor.execute("""
         DELETE FROM user_record
-        WHERE user_id = %s AND DATE(created_at) = %s
-    """, (session['user_id'], parsed_date))
+        WHERE user_id = %s AND created_at = %s
+    """, (session['user_id'], parsed_datetime))
     mysql.connection.commit()
     cursor.close()
+
     return "Record deleted successfully", 200
 
-
-@app.route('/get_report/<date>', methods=['GET'])
-def get_report(date):
+@app.route('/get_report/<timestamp>', methods=['GET'])
+def get_report(timestamp):
     if 'user_id' not in session:
         return "Unauthorized", 403
+
+    try:
+        decoded_time = unquote(timestamp)
+        parsed_datetime = datetime.strptime(decoded_time, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return "Invalid timestamp format", 400
 
     cursor = mysql.connection.cursor()
     cursor.execute("""
         SELECT * FROM user_record
-        WHERE user_id = %s AND DATE(created_at) = %s
-    """, (session['user_id'], date))
+        WHERE user_id = %s AND created_at = %s
+    """, (session['user_id'], parsed_datetime))
     record = cursor.fetchone()
     cursor.close()
 
     if not record:
-        return "No record found for this date", 404
+        abort(404, description="No record found for this timestamp")
 
     # Construct a dictionary for PDF
     user_data = [{
@@ -544,11 +577,12 @@ def get_report(date):
         'smoke': record[10],
         'alco': record[11],
         'active': record[12],
-        'bmi': record[13]
+        'bmi': record[13],
+        'risk_level': record[14]
     }]
 
     pdf_file = create_pdf(user_data)
-    return send_file(pdf_file, as_attachment=True, download_name=f'report_{date}.pdf')
+    return send_file(pdf_file, as_attachment=True, download_name=f'report_{decoded_time}.pdf')
 
 
 @app.route('/logout')

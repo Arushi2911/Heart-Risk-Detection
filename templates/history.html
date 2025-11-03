@@ -70,22 +70,20 @@
             <tbody>
               {% for p in predictions %}
               <tr>
-                <td class="date-cell">{{ p[1].strftime('%d %b %Y, %I:%M %p') }}</td>
+                <td class="date-cell" data-full-time="{{ p[1].strftime('%Y-%m-%d %H:%M:%S') }}">
+                  {{ p[1].strftime('%d %b %Y, %I:%M %p') }}
+                </td>
                 <td>{{ "%.2f"|format(p[2]) if p[2] is not none else "N/A" }}</td>
                 <td>{{ p[3] }}/{{ p[4] }}</td>
-                <td>{{ p[5] or "N/A" }}</td>
-                <td>
-                  <form action="/generate_pdf" method="POST" style="display:inline;">
-                    <input type="hidden" name="record_id" value="{{ p[0] }}">
-                    <button type="submit" class="action-btn download" title="Download Report">
-                      <span class="material-symbols-outlined">download</span>
-                    </button>
-                  </form>
+                <td>{{ p[5] or "N/A" }}</td>  
+                <td>             
+                  <button type="button" class="action-btn download" title="Download Entry" onclick="getReport(this)">
+                    <span class="material-symbols-outlined">download</span>
+                  </button>
                   <!-- Delete record -->
                   <button type="button" class="action-btn delete" title="Delete Entry" onclick="deleteRecord(this)">
                     <span class="material-symbols-outlined">delete</span>
                   </button>
-
                 </td>
               </tr>
               {% endfor %}
@@ -100,42 +98,43 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Get Report for that specific date
+    // Get Report 
     function getReport(button) {
-      const row = button.closest('tr');
-      const date = row.querySelector('.date-cell').innerText.trim();
+  const row = button.closest('tr');
+  const fullTime = row.querySelector('.date-cell').dataset.fullTime;  
+  const displayDate = row.querySelector('.date-cell').innerText.trim();
+
+  fetch(`/get_report/${encodeURIComponent(fullTime)}`)
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to generate report");
+      return res.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report_${displayDate.replace(/[, ]/g, "_")}.pdf`;
+      a.click();
+      a.remove();
+    })
+    .catch(err => alert(err.message));
+}
+
   
-      fetch(`/get_report/${encodeURIComponent(date)}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to generate report");
-          return res.blob();
-        })
-        .then(blob => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `report_${date}.pdf`;
-          a.click();
-          a.remove();
-        })
-        .catch(err => alert(err.message));
-    }
-  
-    // Delete record for that specific date
+    // Delete record 
     function deleteRecord(button) {
-    const row = button.closest('tr');
-    const date = row.querySelector('.date-cell').innerText.trim();
+  const row = button.closest('tr');
+  const fullTime = row.querySelector('.date-cell').dataset.fullTime;
 
-    if (confirm(`Are you sure you want to delete the record for ${date}?`)) {
-      fetch(`/delete_entry/${encodeURIComponent(date)}`, { method: 'POST' })
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to delete record");
-          row.remove();
-        })
-        .catch(err => alert(err.message));
-    }
+  if (confirm(`Are you sure you want to delete the record from ${fullTime}?`)) {
+    fetch(`/delete_entry/${encodeURIComponent(fullTime)}`, { method: 'POST' })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to delete record");
+        row.remove();
+      })
+      .catch(err => alert(err.message));
   }
-
+}
   </script>
 </body>
 </html>
