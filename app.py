@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, redirect, url_for, flash, session, send_file
+from flask import Flask, request, render_template, jsonify, redirect, url_for, flash, session, send_file, abort
 import io
 from io import  BytesIO
 from PIL import Image
@@ -17,26 +17,25 @@ import bcrypt
 from datetime import datetime
 import fitz, re
 import mysql.connector
-from flask_mysqldb import MySQL
 from dotenv import load_dotenv
 import requests
 
 load_dotenv()
 
-app = Flask(__name__)
+class DB:
+    @property
+    def connection(self):
+        return mysql.connector.connect(
+            host=os.getenv('MYSQL_HOST'),
+            port=int(os.getenv('MYSQL_PORT')),
+            user=os.getenv('MYSQL_USER'),
+            password=os.getenv('MYSQL_PASSWORD'),
+            database=os.getenv('MYSQL_DB'),
+            ssl_ca=os.getenv('SSL_CA'),
+            ssl_verify_cert=True
+        )
 
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
-app.config['MYSQL_PORT'] = int(os.getenv('PORT'))
-app.config['MYSQL_CUSTOM_OPTIONS'] = {
-    "ssl": {"ca": os.getenv('SSL_CA')}
-}
-app.secret_key = os.getenv('SECRET_KEY')
-app.config['API_KEY'] = os.getenv('API_KEY')
-
-mysql = MySQL(app)
+mysql = DB()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -141,7 +140,7 @@ def ocr_space_image(image_bytes, API_KEY):
     response = requests.post(
         "https://api.ocr.space/parse/image",
         files={"file": ("image.png", image_bytes, "image/png")},
-        data={"apikey": api_key, "language": "eng", "isOverlayRequired": False},
+        data={"apikey": API_KEY, "language": "eng", "isOverlayRequired": False},
     )
     result = response.json()
     if result.get("IsErroredOnProcessing"):
@@ -162,7 +161,7 @@ def extract_text_from_pdf(file_bytes):
         for page_index in range(len(doc)):
             pix = doc.load_page(page_index).get_pixmap(matrix=fitz.Matrix(2, 2))
             png_bytes = pix.tobytes("png")
-            ocr_text += ocr_space_image(png_bytes, api_key=os.getenv("OCR_SPACE_API_KEY")) + "\n"
+            ocr_text += ocr_space_image(png_bytes, api_key=os.getenv("API_KEY")) + "\n"
         text = ocr_text
 
     return text
