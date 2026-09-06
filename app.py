@@ -19,6 +19,7 @@ import fitz, re
 import mysql.connector as mysql_connector
 from dotenv import load_dotenv
 import requests
+from flask import g
 
 load_dotenv()
 app = Flask(__name__)
@@ -26,19 +27,29 @@ app = Flask(__name__)
 class DB:
     @property
     def connection(self):
-        return mysql_connector.connect(
-            host=os.getenv('MYSQL_HOST'),
-            port=int(os.getenv('MYSQL_PORT')),
-            user=os.getenv('MYSQL_USER'),
-            password=os.getenv('MYSQL_PASSWORD'),
-            database=os.getenv('MYSQL_DB'),
-            ssl_ca=os.getenv('SSL_CA'),
-            ssl_verify_cert=True
-        )
+        if 'db_conn' not in g:
+            g.db_conn = mysql_connector.connect(
+                host=os.getenv('MYSQL_HOST'),
+                port=int(os.getenv('MYSQL_PORT')),
+                user=os.getenv('MYSQL_USER'),
+                password=os.getenv('MYSQL_PASSWORD'),
+                database=os.getenv('MYSQL_DB'),
+                ssl_ca=os.getenv('SSL_CA'),
+                ssl_verify_cert=True
+            )
+        return g.db_conn
+
+mysql = DB()
+
+@app.teardown_appcontext
+def close_db_connection(exception=None):
+    conn = g.pop('db_conn', None)
+    if conn is not None:
+        conn.close()
 
 app.secret_key = os.getenv('SECRET_KEY')
 
-mysql = DB()
+
 
 
 @app.route('/', methods=['GET', 'POST'])
