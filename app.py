@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 import requests
 
 load_dotenv()
+app = Flask(__name__)
 
 class DB:
     @property
@@ -34,6 +35,7 @@ class DB:
             ssl_ca=os.getenv('SSL_CA'),
             ssl_verify_cert=True
         )
+app.secret_key = os.getenv('SECRET_KEY')
 
 mysql = DB()
 
