@@ -54,7 +54,6 @@ def IQR(series):
     Q3 = series.quantile(0.75)
 
     IQR = Q3 - Q1
-
     min_v = Q1 - 1.5 * IQR
     max_v = Q3 + 1.5 * IQR
 
