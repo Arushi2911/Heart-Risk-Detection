@@ -16,7 +16,7 @@ import os
 import bcrypt
 from datetime import datetime
 import fitz, re
-import mysql.connector
+import mysql.connector as mysql_connector
 from dotenv import load_dotenv
 import requests
 
@@ -26,7 +26,7 @@ app = Flask(__name__)
 class DB:
     @property
     def connection(self):
-        return mysql.connector.connect(
+        return mysql_connector.connect(
             host=os.getenv('MYSQL_HOST'),
             port=int(os.getenv('MYSQL_PORT')),
             user=os.getenv('MYSQL_USER'),
@@ -35,6 +35,7 @@ class DB:
             ssl_ca=os.getenv('SSL_CA'),
             ssl_verify_cert=True
         )
+
 app.secret_key = os.getenv('SECRET_KEY')
 
 mysql = DB()
