@@ -21,6 +21,7 @@ import fitz, re
 import mysql.connector
 from flask_mysqldb import MySQL
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -138,6 +139,20 @@ def history():
 
 
 
+import requests
+
+def ocr_space_image(image_bytes, api_key="YOUR_API_KEY"):
+    response = requests.post(
+        "https://api.ocr.space/parse/image",
+        files={"file": ("image.png", image_bytes, "image/png")},
+        data={"apikey": api_key, "language": "eng", "isOverlayRequired": False},
+    )
+    result = response.json()
+    if result.get("IsErroredOnProcessing"):
+        return ""
+    return result["ParsedResults"][0]["ParsedText"]
+
+
 def extract_text_from_pdf(file_bytes):
     doc = fitz.open(stream=file_bytes, filetype="pdf")
     text = ""
@@ -147,13 +162,11 @@ def extract_text_from_pdf(file_bytes):
 
     if len(re.findall(r"[A-Za-z0-9]", text)) < 10:
         print("Text extraction failed — using OCR instead")
-        reader = easyocr.Reader(['en'])
         ocr_text = ""
         for page_index in range(len(doc)):
             pix = doc.load_page(page_index).get_pixmap(matrix=fitz.Matrix(2, 2))
-            img = Image.open(io.BytesIO(pix.tobytes("png"))).convert("RGB")
-            ocr_result = reader.readtext(np.array(img), detail=0)
-            ocr_text += " ".join(ocr_result) + "\n"
+            png_bytes = pix.tobytes("png")
+            ocr_text += ocr_space_image(png_bytes, api_key=os.getenv("OCR_SPACE_API_KEY")) + "\n"
         text = ocr_text
 
     return text
