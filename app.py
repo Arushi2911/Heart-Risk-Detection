@@ -36,6 +36,7 @@ app.config['MYSQL_CUSTOM_OPTIONS'] = {
     "ssl": {"ca": os.getenv('SSL_CA')}
 }
 app.secret_key = os.getenv('SECRET_KEY')
+app.config['API_KEY'] = os.getenv('API_KEY')
 
 mysql = MySQL(app)
 
@@ -138,10 +139,7 @@ def history():
 
 
 
-
-import requests
-
-def ocr_space_image(image_bytes, api_key="YOUR_API_KEY"):
+def ocr_space_image(image_bytes, API_KEY):
     response = requests.post(
         "https://api.ocr.space/parse/image",
         files={"file": ("image.png", image_bytes, "image/png")},
