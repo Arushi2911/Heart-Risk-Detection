@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template, jsonify, redirect, url_for, flash, session, send_file
 import io
 from io import  BytesIO
-import easyocr
 from PIL import Image
 from reportlab.pdfgen import canvas
 from flask_wtf import FlaskForm
@@ -15,7 +14,6 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 import os
 import bcrypt
-import numpy as np
 from datetime import datetime
 import fitz, re
 import mysql.connector
