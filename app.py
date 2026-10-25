@@ -21,17 +21,6 @@ from dotenv import load_dotenv
 import requests
 from flask import g
 
-MODEL_PATH = "model.pkl"
-
-print("Model file exists:", os.path.exists(MODEL_PATH))
-
-try:
-    model = pickle.load(MODEL_PATH)
-    print("MODEL LOADED SUCCESSFULLY")
-    print("Model type:", type(model))
-
-except Exception as e:
-    print("MODEL LOADING FAILED:", str(e))
 
 load_dotenv()
 app = Flask(__name__)
@@ -527,8 +516,11 @@ def index():
             return jsonify({'risk': risk, 'percentage': round(probability, 2)})
 
         except Exception as e:
-            print("❌ Error during prediction:", e)
-            flash(f"Prediction error: {str(e)}", "error")
+            app.logger.exception("Error during prediction")
+
+            return jsonify({
+                "error": "Prediction failed. Check Render logs."
+            }), 500
 
     return render_template('index.html', name=name)
 
