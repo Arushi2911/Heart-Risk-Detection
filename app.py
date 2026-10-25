@@ -621,6 +621,13 @@ def logout():
     flash("You have been logged out successfully.")
     return redirect(url_for('login'))
 
+@app.route('/version')
+def version():
+    return jsonify({
+        "version": "heartsense-test-2",
+        "status": "latest deployment running"
+    })
+
 
 if __name__ == '__main__':
     app.run(debug=True)
