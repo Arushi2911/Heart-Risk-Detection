@@ -21,6 +21,18 @@ from dotenv import load_dotenv
 import requests
 from flask import g
 
+MODEL_PATH = "model.pkl"
+
+print("Model file exists:", os.path.exists(MODEL_PATH))
+
+try:
+    model = pickle.load(MODEL_PATH)
+    print("MODEL LOADED SUCCESSFULLY")
+    print("Model type:", type(model))
+
+except Exception as e:
+    print("MODEL LOADING FAILED:", str(e))
+
 load_dotenv()
 app = Flask(__name__)
 
