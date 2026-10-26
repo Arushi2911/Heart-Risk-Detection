@@ -494,7 +494,7 @@ def index():
 
             # Predict
             prediction = model.predict(X_model)[0]
-            probability = model.predict_proba(X_model)[0][1] * 100
+            probability = float(model.predict_proba(X_model)[0][1] * 100)
             if probability < 30:
                 risk = "Low Risk"
             elif 30 <= probability <= 75:
@@ -534,10 +534,11 @@ def risk_history():
 
     # Fetch last 6 records for this user
     cursor.execute("""
-        SELECT created_at, risk_percentage 
-        FROM user_record 
-        WHERE user_id = %s 
-        ORDER BY created_at DESC 
+        SELECT created_at, risk_percentage
+        FROM user_record
+        WHERE user_id = %s
+        AND risk_percentage IS NOT NULL
+        ORDER BY created_at DESC
         LIMIT 6
     """, (user_id,))
     records = cursor.fetchall()
